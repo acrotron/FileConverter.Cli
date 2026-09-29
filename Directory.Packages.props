@@ -4,6 +4,6 @@
     <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="AsciiRaster.Parser" Version="1.0.1" />
+    <PackageVersion Include="AsciiRaster.Parser" Version="1.1.1" />
   </ItemGroup>
 </Project>

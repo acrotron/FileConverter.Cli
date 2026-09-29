@@ -24,7 +24,7 @@ writer.WriteLine($"{{TITL Grid Vers 2 3}}\r\n{{MTRC \"DNL\" \"dB\"}}\r\n{{DPAL {
 
 foreach (var coordinate in coordinates)
 {
-    writer.WriteLine($"({coordinate.X},{coordinate.Y}) {coordinate.M}");
+    writer.WriteLine(FormattableString.Invariant($"({coordinate.X},{coordinate.Y}) {coordinate.M}"));
 }
 
 writer.WriteLine("}\r\n{ENDF}\r\n");
