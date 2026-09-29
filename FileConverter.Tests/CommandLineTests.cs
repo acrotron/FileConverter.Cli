@@ -36,7 +36,7 @@ public class CommandLineTests
 
         // Assert
         exitCode.Should().Be(CommandLine.Success);
-        File.ReadAllBytes(output).Should().Equal(File.ReadAllBytes(golden));
+        AssertMatchesGolden(output, golden);
     }
 
     [TestMethod]
@@ -60,7 +60,7 @@ public class CommandLineTests
 
         // Assert
         exitCode.Should().Be(CommandLine.Success);
-        File.ReadAllBytes(output).Should().Equal(File.ReadAllBytes("TestData/simplified-int_52.3676_4.9041.nmp"));
+        AssertMatchesGolden(output, "TestData/simplified-int_52.3676_4.9041.nmp");
     }
 
     [TestMethod]
@@ -140,6 +140,47 @@ public class CommandLineTests
         // Assert
         exitCode.Should().Be(CommandLine.Failure);
         stderr.Should().StartWith("Error:");
+    }
+
+    /// <summary>
+    /// Compares an output file with a golden file: identical text, except that coordinates may differ by 1e-12
+    /// degrees (~0.1 µm), because trigonometric functions can round differently in the last bit across platforms.
+    /// </summary>
+    private static void AssertMatchesGolden(string output, string golden)
+    {
+        string actualText = File.ReadAllText(output);
+        actualText.Replace("\r\n", "").Should().NotContain("\n", "every line ends with CRLF");
+
+        string[] actual = actualText.Split("\r\n");
+        string[] expected = File.ReadAllText(golden).Split("\r\n");
+        actual.Should().HaveSameCount(expected);
+
+        for (int i = 0; i < expected.Length; i++)
+        {
+            if (TryParsePoint(expected[i], out var e) && TryParsePoint(actual[i], out var a))
+            {
+                a.X.Should().BeApproximately(e.X, 1e-12, $"longitude on line {i + 1}");
+                a.Y.Should().BeApproximately(e.Y, 1e-12, $"latitude on line {i + 1}");
+                a.Value.Should().Be(e.Value, $"value on line {i + 1}");
+            }
+            else
+            {
+                actual[i].Should().Be(expected[i], $"line {i + 1}");
+            }
+        }
+    }
+
+    // Parses a DPAL point line: "(x,y) value", written with the invariant culture.
+    private static bool TryParsePoint(string line, out (double X, double Y, double Value) point)
+    {
+        point = default;
+        if (!line.StartsWith('(')) return false;
+
+        int close = line.IndexOf(')');
+        string[] xy = line[1..close].Split(',');
+        var inv = CultureInfo.InvariantCulture;
+        point = (double.Parse(xy[0], inv), double.Parse(xy[1], inv), double.Parse(line[(close + 1)..], inv));
+        return true;
     }
 
     private static int Run(out string stderr, params string[] args)
