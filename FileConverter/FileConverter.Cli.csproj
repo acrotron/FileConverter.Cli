@@ -8,10 +8,4 @@
     <PackageReference Include="AsciiRaster.Parser" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="simplified-int.asc">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>
